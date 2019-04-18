@@ -40,9 +40,8 @@ import org.apache.kylin.metadata.model.TblColRef.InnerDataTypeEnum;
 
 /**
  */
-@SuppressWarnings("serial")
 public class DataType implements Serializable {
-
+    private static final long serialVersionUID = -8891652700267537109L;
     private static final LinkedHashSet<String> VALID_TYPES = new LinkedHashSet<String>();
     private static final LinkedHashSet<String> COMPLEX_TYPES = new LinkedHashSet<String>();
 
@@ -246,6 +245,13 @@ public class DataType implements Serializable {
     
     public int compare(String value1, String value2) {
         return getOrder().compare(value1,  value2);
+    }
+
+    public boolean needCompare() {
+        if (isComplexType(this) || isBoolean()) {
+            return false;
+        }
+        return true;
     }
 
     private static String replaceLegacy(String str) {

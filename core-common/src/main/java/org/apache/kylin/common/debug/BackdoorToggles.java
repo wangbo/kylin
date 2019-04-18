@@ -26,6 +26,7 @@ import java.util.Set;
 
 import com.google.common.collect.Sets;
 import org.apache.commons.lang.StringUtils;
+import org.apache.kylin.common.threadlocal.InternalThreadLocal;
 import org.apache.kylin.common.util.Pair;
 
 import com.google.common.collect.Maps;
@@ -39,7 +40,7 @@ import com.google.common.collect.Maps;
  */
 public class BackdoorToggles {
 
-    private static final ThreadLocal<Map<String, String>> _backdoorToggles = new ThreadLocal<Map<String, String>>();
+    private static final InternalThreadLocal<Map<String, String>> _backdoorToggles = new InternalThreadLocal<Map<String, String>>();
 
     public static void setToggles(Map<String, String> toggles) {
         _backdoorToggles.set(toggles);
@@ -116,6 +117,10 @@ public class BackdoorToggles {
 
     public static boolean getHtraceEnabled() {
         return getBoolean(DEBUG_TOGGLE_HTRACE_ENABLED);
+    }
+
+    public static boolean isStreamingProfileEnable() {
+        return getBoolean(DEBUG_TOGGLE_STREAMING_DETAIL_PROFILE);
     }
 
     public static int getQueryTimeout() {
@@ -368,4 +373,14 @@ public class BackdoorToggles {
      * extra calcite props from jdbc client
      */
     public static final String JDBC_CLIENT_CALCITE_PROPS = "JDBC_CLIENT_CALCITE_PROPS";
+
+    /**
+     * set DEBUG_TOGGLE_STREAMING_PROFILE="true" to profile streaming query
+     *
+     example:(put it into request body)
+     "backdoorToggles": {
+     "DEBUG_TOGGLE_STREAMING_DETAIL_PROFILE": "true"
+     }
+     */
+    public final static String DEBUG_TOGGLE_STREAMING_DETAIL_PROFILE = "DEBUG_TOGGLE_STREAMING_DETAIL_PROFILE";
 }

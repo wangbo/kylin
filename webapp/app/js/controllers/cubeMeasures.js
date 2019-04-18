@@ -58,7 +58,6 @@ KylinApp.controller('CubeMeasuresCtrl', function ($scope, $modal,MetaModel,cubes
     $scope.nextParameters = [];
     $scope.measureParamValueColumn=$scope.getCommonMetricColumns();
     $scope.newMeasure = (!!measure)? jQuery.extend(true, {},measure):CubeDescModel.createMeasure();
-    $scope.newMeasure.function.returntype=$scope.newMeasure.function.returntype.replace(/\,\d+/,'');
     if(!!measure && measure.function.parameter.next_parameter){
       $scope.nextPara.value = measure.function.parameter.next_parameter.value;
     }
@@ -365,10 +364,6 @@ KylinApp.controller('CubeMeasuresCtrl', function ($scope, $modal,MetaModel,cubes
       $scope.newMeasure.function.parameter.type= 'column';
     }else{
       $scope.nextParameterInit();
-    }
-
-    if($scope.newMeasure.function.expression == 'COUNT'){
-      $scope.newMeasure.function.parameter.type= 'constant';
     }
 
     if($scope.newMeasure.function.parameter.type=="constant"&&$scope.newMeasure.function.expression!=="COUNT_DISTINCT"){

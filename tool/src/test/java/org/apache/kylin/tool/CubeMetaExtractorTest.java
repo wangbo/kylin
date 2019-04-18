@@ -82,6 +82,7 @@ public class CubeMetaExtractorTest extends LocalFileMetadataTestCase {
         Set<String> expectTbl = Sets.newHashSet(
                 "/table/DEFAULT.FIFTY_DIM.json", //
                 "/table/DEFAULT.STREAMING_TABLE.json", //
+                "/table/DEFAULT.STREAMING_CATEGORY.json", //
                 "/table/DEFAULT.TEST_ACCOUNT.json", //
                 "/table/DEFAULT.TEST_CATEGORY_GROUPINGS.json", //
                 "/table/DEFAULT.TEST_COUNTRY.json", //
@@ -94,7 +95,9 @@ public class CubeMetaExtractorTest extends LocalFileMetadataTestCase {
                 "/table/SSB.DATES.json", //
                 "/table/SSB.PART.json", //
                 "/table/SSB.SUPPLIER.json", //
-                "/table/SSB.V_LINEORDER.json"
+                "/table/SSB.V_LINEORDER.json", //
+                "/table/DEFAULT.STREAMING_V2_TABLE.json", //
+                "/table/DEFAULT.STREAMING_V2_USER_INFO_TABLE.json"
         );
         Set<String> expectTblExd = Sets.newHashSet(
                 "/table_exd/DEFAULT.TEST_COUNTRY.json", //

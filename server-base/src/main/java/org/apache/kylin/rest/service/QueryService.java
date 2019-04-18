@@ -93,6 +93,7 @@ import org.apache.kylin.metadata.querymeta.SelectedColumnMeta;
 import org.apache.kylin.metadata.querymeta.TableMeta;
 import org.apache.kylin.metadata.querymeta.TableMetaWithType;
 import org.apache.kylin.metadata.realization.IRealization;
+import org.apache.kylin.metrics.MetricsManager;
 import org.apache.kylin.query.QueryConnection;
 import org.apache.kylin.query.relnode.OLAPContext;
 import org.apache.kylin.query.util.PushDownUtil;
@@ -116,6 +117,7 @@ import org.apache.kylin.rest.util.SQLResponseSignatureUtil;
 import org.apache.kylin.rest.util.TableauInterceptor;
 import org.apache.kylin.storage.hybrid.HybridInstance;
 import org.apache.kylin.storage.hybrid.HybridManager;
+import org.apache.kylin.storage.stream.StreamStorageQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -352,6 +354,13 @@ public class QueryService extends BasicService {
         logger.info(stringBuilder.toString());
     }
 
+    public SQLResponse querySystemCube(String sql) {
+        SQLRequest sqlRequest = new SQLRequest();
+        sqlRequest.setProject(MetricsManager.SYSTEM_PROJECT);
+        sqlRequest.setSql(sql);
+        return doQueryWithCache(sqlRequest, false);
+    }
+
     public SQLResponse doQueryWithCache(SQLRequest sqlRequest) {
         long t = System.currentTimeMillis();
         aclEvaluate.checkProjectReadPermission(sqlRequest.getProject());
@@ -375,7 +384,8 @@ public class QueryService extends BasicService {
         // project not found
         ProjectManager mgr = ProjectManager.getInstance(KylinConfig.getInstanceFromEnv());
         if (mgr.getProject(sqlRequest.getProject()) == null) {
-            throw new BadRequestException(String.format(Locale.ROOT, msg.getPROJECT_NOT_FOUND(), sqlRequest.getProject()));
+            throw new BadRequestException(
+                    String.format(Locale.ROOT, msg.getPROJECT_NOT_FOUND(), sqlRequest.getProject()));
         }
         if (StringUtils.isBlank(sqlRequest.getSql())) {
             throw new BadRequestException(msg.getNULL_EMPTY_SQL());
@@ -471,6 +481,23 @@ public class QueryService extends BasicService {
             logger.info("Stats of SQL response: isException: {}, duration: {}, total scan count {}", //
                     String.valueOf(sqlResponse.getIsException()), String.valueOf(sqlResponse.getDuration()),
                     String.valueOf(sqlResponse.getTotalScanCount()));
+
+            boolean realtimeQuery = false;
+            Collection<OLAPContext> olapContexts = OLAPContext.getThreadLocalContexts();
+            if (olapContexts != null) {
+                for (OLAPContext ctx : olapContexts) {
+                    try {
+                        if (ctx.storageContext.getStorageQuery() instanceof StreamStorageQuery) {
+                            realtimeQuery = true;
+                            logger.debug("Shutdown query cache for realtime.");
+                        }
+                    } catch (Exception e) {
+                        logger.error("Error", e);
+                    }
+
+                }
+            }
+
             if (checkCondition(queryCacheEnabled, "query cache is disabled") //
                     && checkCondition(!Strings.isNullOrEmpty(sqlResponse.getCube()),
                             "query does not hit cube nor hybrid") //
@@ -490,7 +517,10 @@ public class QueryService extends BasicService {
                     && checkCondition(sqlResponse.getResults().size() < kylinConfig.getLargeQueryThreshold(),
                             "query response is too large: {} ({})", sqlResponse.getResults().size(),
                             kylinConfig.getLargeQueryThreshold())) {
-                cacheManager.getCache(QUERY_CACHE).put(sqlRequest.getCacheKey(), sqlResponse);
+
+                if (!realtimeQuery) {
+                    cacheManager.getCache(QUERY_CACHE).put(sqlRequest.getCacheKey(), sqlResponse);
+                }
             } else if (isDummpyResponseEnabled) {
                 cacheManager.getCache(QUERY_CACHE).evict(sqlRequest.getCacheKey());
             }
@@ -1020,8 +1050,7 @@ public class QueryService extends BasicService {
     }
 
     private SQLResponse getPrepareOnlySqlResponse(String projectName, String correctedSql, Connection conn,
-            Boolean isPushDown,
-            List<List<String>> results, List<SelectedColumnMeta> columnMetas) throws SQLException {
+            Boolean isPushDown, List<List<String>> results, List<SelectedColumnMeta> columnMetas) throws SQLException {
 
         CalcitePrepareImpl.KYLIN_ONLY_PREPARE.set(true);
 

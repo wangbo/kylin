@@ -79,6 +79,7 @@ public class JobInfoConverter {
 
         final JobInstance result = new JobInstance();
         result.setName(job.getName());
+        result.setProjectName(cubeJob.getProjectName());
         result.setRelatedCube(cube != null ? cube.getName() : CubingExecutableUtil.getCubeName(cubeJob.getParams()));
         result.setDisplayCubeName(cube != null ? cube.getDisplayName() : CubingExecutableUtil.getCubeName(cubeJob.getParams()));
         result.setRelatedSegment(CubingExecutableUtil.getSegmentId(cubeJob.getParams()));
@@ -87,6 +88,7 @@ public class JobInfoConverter {
         result.setUuid(job.getId());
         result.setType(CubeBuildTypeEnum.BUILD);
         result.setStatus(parseToJobStatus(output.getState()));
+        result.setBuildInstance(AbstractExecutable.getBuildInstance(output));
         result.setMrWaiting(AbstractExecutable.getExtraInfoAsLong(output, CubingJob.MAP_REDUCE_WAIT_TIME, 0L) / 1000);
         result.setExecStartTime(AbstractExecutable.getStartTime(output));
         result.setExecEndTime(AbstractExecutable.getEndTime(output));
@@ -114,6 +116,7 @@ public class JobInfoConverter {
 
         final JobInstance result = new JobInstance();
         result.setName(job.getName());
+        result.setProjectName(job.getProjectName());
         result.setRelatedCube(CubingExecutableUtil.getCubeName(job.getParams()));
         result.setDisplayCubeName(CubingExecutableUtil.getCubeName(job.getParams()));
         result.setLastModified(output.getLastModified());
@@ -121,6 +124,7 @@ public class JobInfoConverter {
         result.setUuid(job.getId());
         result.setType(CubeBuildTypeEnum.CHECKPOINT);
         result.setStatus(parseToJobStatus(output.getState()));
+        result.setBuildInstance(AbstractExecutable.getBuildInstance(output));
         result.setExecStartTime(AbstractExecutable.getStartTime(output));
         result.setExecEndTime(AbstractExecutable.getEndTime(output));
         result.setExecInterruptTime(AbstractExecutable.getInterruptTime(output));

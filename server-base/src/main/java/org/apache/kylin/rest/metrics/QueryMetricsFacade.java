@@ -79,12 +79,11 @@ public class QueryMetricsFacade {
             return;
 
         String projectName = sqlRequest.getProject();
-        String cubeName = sqlResponse.getCube();
-
         update(getQueryMetrics("Server_Total"), sqlResponse);
-
         update(getQueryMetrics(projectName), sqlResponse);
 
+        String cube = sqlResponse.getCube();
+        String cubeName = cube.replace("=", "->");
         String cubeMetricName = projectName + ",sub=" + cubeName;
         update(getQueryMetrics(cubeMetricName), sqlResponse);
     }
@@ -145,7 +144,8 @@ public class QueryMetricsFacade {
                 }
             }
             setQueryStats(queryMetricsEvent, //
-                    sqlResponse.getDuration(), sqlResponse.getResults().size(), totalStorageReturnCount);
+                    sqlResponse.getDuration(), sqlResponse.getResults() == null ? 0 : sqlResponse.getResults().size(),
+                    totalStorageReturnCount);
             //For update query level metrics
             MetricsManager.getInstance().update(queryMetricsEvent);
         }

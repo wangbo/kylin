@@ -126,6 +126,9 @@ public class UpdateCubeInfoAfterBuildStep extends AbstractExecutable {
         final TblColRef partitionCol = segment.getCubeDesc().getModel().getPartitionDesc().getPartitionDateColumnRef();
 
         for (TblColRef dimColRef : segment.getCubeDesc().listDimensionColumnsExcludingDerived(true)) {
+            if (!dimColRef.getType().needCompare())
+                continue;
+
             final String factColumnsInputPath = this.getParams().get(BatchConstants.CFG_OUTPUT_PATH);
             Path colDir = new Path(factColumnsInputPath, dimColRef.getIdentity());
             FileSystem fs = HadoopUtil.getWorkingFileSystem();
@@ -158,11 +161,10 @@ public class UpdateCubeInfoAfterBuildStep extends AbstractExecutable {
             DataTypeOrder order = dimColRef.getType().getOrder();
             String minValue = order.min(minValues);
             String maxValue = order.max(maxValues);
-            logger.info("updateSegment step. {} minValue:" + minValue + " maxValue:" + maxValue, dimColRef.getName());
 
             if (segment.isOffsetCube() && partitionCol != null
                     && partitionCol.getIdentity().equals(dimColRef.getIdentity())) {
-                logger.info("update partition. {} timeMinValue:" + minValue + " timeMaxValue:" + maxValue,
+                logger.debug("update partition. {} timeMinValue:" + minValue + " timeMaxValue:" + maxValue,
                         dimColRef.getName());
                 if (DateFormat.stringToMillis(minValue) != timeMinValue
                         && DateFormat.stringToMillis(maxValue) != timeMaxValue) {

@@ -45,6 +45,7 @@ public class KylinKryoRegistrator implements KryoRegistrator {
         kyroClasses.add(String[].class);
         kyroClasses.add(String[][].class);
         kyroClasses.add(Object[].class);
+        kyroClasses.add(Object.class);
         kyroClasses.add(Text.class);
         kyroClasses.add(java.math.BigDecimal.class);
         kyroClasses.add(java.util.ArrayList.class);
@@ -103,6 +104,7 @@ public class KylinKryoRegistrator implements KryoRegistrator {
         addClassQuitely(kyroClasses, "org.apache.kylin.job.shaded.org.roaringbitmap.buffer.MappeableBitmapContainer");
         addClassQuitely(kyroClasses, "org.apache.kylin.job.shaded.org.roaringbitmap.buffer.ImmutableRoaringBitmap");
         addClassQuitely(kyroClasses, "org.apache.kylin.job.shaded.org.roaringbitmap.buffer.ImmutableRoaringArray");
+        addClassQuitely(kyroClasses, "org.apache.kylin.job.shaded.org.roaringbitmap.buffer.MappeableRunContainer");
 
         addClassQuitely(kyroClasses, "com.google.common.collect.EmptyImmutableList");
         addClassQuitely(kyroClasses, "java.nio.HeapShortBuffer");
@@ -113,6 +115,7 @@ public class KylinKryoRegistrator implements KryoRegistrator {
 
         addClassQuitely(kyroClasses, "org.apache.spark.internal.io.FileCommitProtocol$TaskCommitMessage");
         addClassQuitely(kyroClasses, "scala.collection.immutable.Set$EmptySet$");
+        addClassQuitely(kyroClasses, "scala.reflect.ManifestFactory$$anon$2");
 
         for (Class kyroClass : kyroClasses) {
             kryo.register(kyroClass);

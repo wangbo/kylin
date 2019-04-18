@@ -67,7 +67,7 @@ public class JoinedFlatTable {
     }
 
     public static String generateCreateTableStatement(IJoinedFlatTableDesc flatDesc, String storageDfsDir) {
-        String storageFormat = flatDesc.getDataModel().getConfig().getFlatTableStorageFormat();
+        String storageFormat = flatDesc.getSegment().getConfig().getFlatTableStorageFormat();
         return generateCreateTableStatement(flatDesc, storageDfsDir, storageFormat);
     }
 
@@ -213,7 +213,7 @@ public class JoinedFlatTable {
     }
 
     private static void appendClusterStatement(StringBuilder sql, TblColRef clusterCol) {
-        sql.append(" CLUSTER BY ").append(colName(clusterCol)).append(";\n");
+        sql.append(" CLUSTER BY CAST(").append(colName(clusterCol)).append(" AS STRING);\n");
     }
 
     private static void appendWhereStatement(IJoinedFlatTableDesc flatDesc, StringBuilder sql) {
@@ -250,11 +250,11 @@ public class JoinedFlatTable {
         sql.append(whereBuilder.toString());
     }
 
-    private static String colName(TblColRef col) {
+    public static String colName(TblColRef col) {
         return colName(col, true);
     }
 
-    private static String colName(TblColRef col, boolean useAlias) {
+    public static String colName(TblColRef col, boolean useAlias) {
         return useAlias ? col.getTableAlias() + "_" + col.getName() : col.getName();
     }
 
@@ -267,6 +267,10 @@ public class JoinedFlatTable {
             hiveDataType = "int";
         } else if (originDataType.startsWith("bigint")) {
             hiveDataType = "bigint";
+        } else if (originDataType.startsWith("double")) {
+            hiveDataType = "double";
+        } else if (originDataType.startsWith("float")) {
+            hiveDataType = "float";
         } else {
             hiveDataType = originDataType;
         }
